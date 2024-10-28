@@ -1,35 +1,12 @@
-const products = [
-    {
-        id: "1",
-        title: "Baby Yoda",
-        price: 100,
-        img: "img/baby-yoda.svg",
-        description: "The Child, colloquially referred to as Baby Yoda by fans and the media, is a fictional character from the Star Wars Disney+ original television series The Mandalorian. He is an infant member of the same unnamed alien species as the popular Star Wars character Yoda, with whom he shares a strong ability in the Force."
-    },
-    {
-        id: "2",
-        title: "Banana",
-        price: 10,
-        img: "img/banana.svg",
-        description: "The banana is an edible fruit, botanically a berry, produced by several kinds of large herbaceous flowering plants in the genus Musa. In some countries, bananas used for cooking may be called plantains."
-    },
-    {
-        id: "3",
-        title: "Girl",
-        price: 200,
-        img: "img/girl.svg",
-        description: "Girl sticker"
-    },
-    {
-        id: "4",
-        title: "Viking",
-        price: 150,
-        img: "img/viking.svg",
-        description: "Viking sticker"
-    }
-];
+const response = await fetch('api/products.json');
+const products = await response.json();
+renderProducts(products);
 
-function renderProducts(products) {
+// fetch('api/products.json')
+//  .then( response => response.json() )
+//  .then( products => renderProducts(products) );
+
+function renderProducts(products, rate = 1) {
     let productsHtml = '';
     for (const product of products) {
         productsHtml += ` 
@@ -42,7 +19,7 @@ function renderProducts(products) {
                         Info
                     </button>
                     <button class="products__button products__button--buy button button-card">
-                        Buy - $${product.price}
+                        Buy - ${(product.price * rate).toFixed(2)}
                     </button>
                 </div>
             </article>`;
@@ -50,4 +27,15 @@ function renderProducts(products) {
     document.querySelector('.products__list').innerHTML = productsHtml;
 }
 
-renderProducts(products);
+let currencies;
+async function changeCurrency() {
+    if (!currencies) {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        currencies = await response.json();
+    }
+    const userSelectedCurrency = document.querySelector('.products__currency').value;
+    const rate = currencies.rates[userSelectedCurrency];
+    renderProducts(products, rate);
+}
+
+document.querySelector('.products__currency').addEventListener('change', changeCurrency);
